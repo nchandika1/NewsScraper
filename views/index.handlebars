@@ -1,0 +1,14 @@
+<div class="welcome">
+	<h3 style="text-align: center;">Tech Cruch Edition</h3>
+</div>
+<br>
+<div id="articles">
+	{{#each articles}}
+		<a href="{{url}}" target="_blank" style="font-weight: bold;">{{title}}</a>
+		<h6>{{byLine}}</h6>
+		<h6>{{created}}</h6>
+		<p>{{excerpt}}</p>
+		<button class="save-article" data-id="{{id}}">Save Article</button>
+		<hr>
+	{{/each}}	
+</div>

@@ -1,0 +1,135 @@
+<div class="welcome">
+	<h3 style="text-align: center;">Tech Cruch Edition: Saved Articles</h3>
+</div>
+<br>
+<div id="articles">
+	{{#each articles}}
+		<a href="{{url}}" target="_blank" style="font-weight: bold;">{{title}}</a>
+		<h6>{{byLine}}</h6>
+		<h6>{{created}}</h6>
+		<p>{{excerpt}}</p>
+		<button id="addNotes" data-id="{{id}}">Add Notes</button>
+		<button class="delete-article" data-id="{{id}}">Delete Saved Article</button>
+		<hr>
+	{{/each}}	
+</div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="displayNotes">
+
+    </div>
+    <form>
+		<textarea id="notes" name="notes" placeholder="Notes" style="width: 500px; padding: 10px 0;"></textarea>
+		<br>
+		<button id="submit">Save</a>
+    </form>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+
+	// Get the modal
+	var modal = document.getElementById('myModal');
+
+	// Get the button that opens the modal
+	var btn = document.getElementById("addNotes");
+
+	// Get the <span> element that closes the modal
+	var span = document.getElementsByClassName("close")[0];
+
+	// When the user clicks the button, open the modal 
+	$(document).on("click", "#addNotes", function() {
+		event.preventDefault();
+		console.log("addnotes clicked");
+	    modal.style.display = "block";
+	    var id = $(this).attr("data-id");
+	    console.log("Get all notes: " + id);
+	    $("#submit").attr("data-id", id);
+
+	    // Get all notes and display
+	    $.ajax({
+			url: "/notes/" + id,
+			method: "GET"
+		}).done(function(data) {
+			console.log(data);
+			console.log("Get All Notes: " + data.notes.length);
+			var displayDiv = $('#displayNotes');
+			var notes = data.notes;
+			displayDiv.empty();
+			for (var i=0; i<notes.length; i++){
+				console.log(notes[i].text);
+				displayDiv.append("<h6>Note " + (i+1) + "</h6>");
+				displayDiv.append(notes[i].text + " ");
+				displayDiv.append("<button id=\"deleteNote\" " +
+					"data-id=\"" + 
+					notes[i]._id + "\" data-parent=\"" + data._id + "\">X</button>");
+			}
+		});	
+
+	});
+
+	// When the user clicks on <span> (x), close the modal
+	span.onclick = function() {
+	    modal.style.display = "none";
+	}
+
+	// When the user clicks anywhere outside of the modal, close it
+	window.onclick = function(event) {
+	    if (event.target == modal) {
+	        modal.style.display = "none";
+	    }
+	}
+
+	$(document).on("click", "#deleteNote", function() {
+		event.preventDefault();
+
+		var id = $(this).attr("data-id");
+		var article = $(this).attr("data-parent");
+		console.log("Deleting Note with ID: " + id + " parent " + article);
+		var delObj = {
+			id: article
+		};
+
+		$.ajax({
+			url: "/delete-note/"+id,
+			method: "POST",
+			data: delObj
+		})
+		.done(function(data){
+			console.log(data);
+		});
+	});
+
+	// Click handler for Save Button
+	// Add notes to the article
+	$(document).on("click", "#submit", function() {
+		event.preventDefault();
+		if (document.getElementById('notes').value == "") {
+			alert("Fill All Fields !");
+		} else {
+			var notesObj = {
+				text: $("#notes").val().trim()
+			}
+			var id = $(this).attr("data-id");
+			console.log("Save Notes: " + id);
+			$.ajax({
+				url: "/addnote/" + id,
+				method: "POST",
+				data: notesObj
+			}).done(function(data) {
+				console.log("Saved Notes: " + data);
+			});			
+		}
+	});
+
+</script>
+
+
+
+
