@@ -75,7 +75,7 @@
 				noteDiv.append(notes[i].text + " ");
 				noteDiv.append("<button id=\"deleteNote\" " +
 					"data-id=\"" + 
-					notes[i]._id + "\">x</button>");
+					notes[i]._id + "\">x</button><hr>");
 				displayDiv.append(noteDiv);
 			}
 		});	
@@ -97,14 +97,15 @@
 	$(document).on("click", "#deleteNote", function() {
 		event.preventDefault();
 
+		// Get both note and article id
 		var id = $(this).attr("data-id");
 		var article = $(this).parent().parent().attr("data-id");
-		console.log("Note ID: " + id);
-		console.log("Article ID: " + article);
+		
 		var delObj = {
 			id: article
 		};
 
+		// Initiate the Delete
 		$.ajax({
 			url: "/delete-note/"+id,
 			method: "POST",
@@ -114,7 +115,7 @@
 			console.log(data);
 		});
 
-		// Remove the elements for the deleted notes
+		// Remove the elements from the display
 		$(this).parent().remove();
 	});
 
@@ -137,7 +138,7 @@
 				noteDiv.append(notesObj.text + " ");
 				noteDiv.append("<button id=\"deleteNote\" " +
 					"data-id=\"" + 
-					id + "\">x</button>");
+					id + "\">x</button><hr>");
 				displayDiv.append(noteDiv);
 
 			// Add to the database

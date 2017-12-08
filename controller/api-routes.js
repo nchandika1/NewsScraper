@@ -23,7 +23,6 @@ function newsRoutes(app) {
 		db.Note
 		.create(body)
 		.then(function(dbNote) {
-			console.log(dbNote);
 			return db.Article.findOneAndUpdate({"_id": req.params.id}, { $push: { notes: dbNote._id } }, { new: true });
 		});
 	});
@@ -36,7 +35,6 @@ function newsRoutes(app) {
 		db.Note
 		.findOneAndRemove({_id: req.params.id})
 		.then(function(dbNote) {
-			console.log(dbNote);
 			return db.Article.findOneAndUpdate({"_id": req.body.id}, { $pull: { notes: req.params.id } }, { new: true });
 		});
 	});
@@ -49,7 +47,6 @@ function newsRoutes(app) {
 		.findOne({"_id": req.params.id})
 		.populate("notes")
 		.then(function(data) {
-		    console.log(data);
 		    res.json(data);
 	 	});
 	});
@@ -83,10 +80,11 @@ function newsRoutes(app) {
 					.then(function(err, data) {
 						console.log("DONE");
 						if (err) {
-							console.log("Insert Error: " + err);
+							// Gives out error for duplicate entries, which is ok
+							// we don't have duplicates
+							// console.log("Insert Error: " + err);
 							res.send("Scrape Complete");
 						} else {
-							console.log(data);
 							res.send("Scrape Complete");
 						}
 					});
@@ -119,13 +117,12 @@ function newsRoutes(app) {
 		db.Article
 		.findOneAndUpdate({"_id":req.params.id},{saved: false, notes: []}, {new: false})
 		.then(function(data) {
-			console.log(data);
 			for (var i=0; i<data.notes.length; i++) {
 				console.log(data.notes[i]);
 				db.Note
 				.findByIdAndRemove(data.notes[i])
 				.then(function(data) {
-					console.log("Find Notes and Delete: " + data);
+					console.log("Deleted Notes");
 				});
 			}
 			res.json(data);
@@ -138,7 +135,6 @@ function newsRoutes(app) {
 		db.Article
 		.find({saved: true})
 		.then(function(dbSaved) {
-			console.log(dbSaved);
 			res.render('saved', {articles: dbSaved});
 		});
 	});
