@@ -9,8 +9,8 @@ var request = require("request");
 var cheerio = require("cheerio");
 var hbars = require("express-handlebars");
 var bodyParser = require("body-parser");
-var mongoose = require("mongoose");
 
+// Handle to our models
 var db = require("./models");
 
 // Get Express handle and PORT to listen to
@@ -37,7 +37,7 @@ mongoose.connect("mongodb://localhost/NewsScraperDb", {
   useMongoClient: true
 });
 
-// Routes
+// Access to all our Routes
 require("./controller/api-routes.js")(app);
 
 // Listen on the port

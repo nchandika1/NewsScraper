@@ -23,6 +23,7 @@
     <div id="displayNotes">
 
     </div>
+    <br>
     <form>
 		<textarea id="notes" name="notes" placeholder="Notes" style="width: 500px; padding: 10px 0;"></textarea>
 		<br>
@@ -43,35 +44,41 @@
 	// Get the <span> element that closes the modal
 	var span = document.getElementsByClassName("close")[0];
 
-	// When the user clicks the button, open the modal 
+	// Click function for "Add Notes" Button
+	// Open a Modal and display all existing Notes
 	$(document).on("click", "#addNotes", function() {
 		event.preventDefault();
-		console.log("addnotes clicked");
+
+		// Display Modal
 	    modal.style.display = "block";
+
+	    // Remember the ID for the Article that opened the Modal
 	    var id = $(this).attr("data-id");
-	    console.log("Get all notes: " + id);
+
+	    // Save the Article ID as data-attribute to the "Save Notes" button
 	    $("#submit").attr("data-id", id);
+	    $('#displayNotes').attr("data-id", id);
 
 	    // Get all notes and display
 	    $.ajax({
 			url: "/notes/" + id,
 			method: "GET"
 		}).done(function(data) {
-			console.log(data);
-			console.log("Get All Notes: " + data.notes.length);
 			var displayDiv = $('#displayNotes');
 			var notes = data.notes;
+
+			// Make sure to empty out the div before adding all notes
 			displayDiv.empty();
+
 			for (var i=0; i<notes.length; i++){
-				console.log(notes[i].text);
-				displayDiv.append("<h6>Note " + (i+1) + "</h6>");
-				displayDiv.append(notes[i].text + " ");
-				displayDiv.append("<button id=\"deleteNote\" " +
+				var noteDiv = $("<div>");
+				noteDiv.append(notes[i].text + " ");
+				noteDiv.append("<button id=\"deleteNote\" " +
 					"data-id=\"" + 
-					notes[i]._id + "\" data-parent=\"" + data._id + "\">X</button>");
+					notes[i]._id + "\">x</button>");
+				displayDiv.append(noteDiv);
 			}
 		});	
-
 	});
 
 	// When the user clicks on <span> (x), close the modal
@@ -86,12 +93,14 @@
 	    }
 	}
 
+	// Click handler for "Delete Notes" Button
 	$(document).on("click", "#deleteNote", function() {
 		event.preventDefault();
 
 		var id = $(this).attr("data-id");
-		var article = $(this).attr("data-parent");
-		console.log("Deleting Note with ID: " + id + " parent " + article);
+		var article = $(this).parent().parent().attr("data-id");
+		console.log("Note ID: " + id);
+		console.log("Article ID: " + article);
 		var delObj = {
 			id: article
 		};
@@ -101,29 +110,43 @@
 			method: "POST",
 			data: delObj
 		})
-		.done(function(data){
+		.done(function(data) {
 			console.log(data);
 		});
+
+		// Remove the elements for the deleted notes
+		$(this).parent().remove();
 	});
 
-	// Click handler for Save Button
-	// Add notes to the article
+	// Click handler for Save Notes Button
 	$(document).on("click", "#submit", function() {
 		event.preventDefault();
+
 		if (document.getElementById('notes').value == "") {
+			//Validate
 			alert("Fill All Fields !");
 		} else {
 			var notesObj = {
 				text: $("#notes").val().trim()
 			}
+			$("#notes").val('');
 			var id = $(this).attr("data-id");
-			console.log("Save Notes: " + id);
+
+			var displayDiv = $('#displayNotes');
+				var noteDiv = $("<div>");
+				noteDiv.append(notesObj.text + " ");
+				noteDiv.append("<button id=\"deleteNote\" " +
+					"data-id=\"" + 
+					id + "\">x</button>");
+				displayDiv.append(noteDiv);
+
+			// Add to the database
 			$.ajax({
 				url: "/addnote/" + id,
 				method: "POST",
 				data: notesObj
 			}).done(function(data) {
-				console.log("Saved Notes: " + data);
+				console.log("Saved Note: ", data);
 			});			
 		}
 	});

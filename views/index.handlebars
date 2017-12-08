@@ -1,14 +1,26 @@
+<!-- Home Page -->
+
 <div class="welcome">
-	<h3 style="text-align: center;">Tech Cruch Edition</h3>
+	<h3 class="welcome-msg">Tech Cruch Edition</h3>
 </div>
 <br>
-<div id="articles">
-	{{#each articles}}
-		<a href="{{url}}" target="_blank" style="font-weight: bold;">{{title}}</a>
-		<h6>{{byLine}}</h6>
-		<h6>{{created}}</h6>
-		<p>{{excerpt}}</p>
-		<button class="save-article" data-id="{{id}}">Save Article</button>
-		<hr>
-	{{/each}}	
-</div>
+<hr>
+
+<!-- Present content if there is already scraped articles from the DB
+	 If not, just display the welcome msg and wait for the user to do a new Scrape -->
+{{#if contentPresent}}
+	<div id="articles">
+		{{#each articles}}
+			<a href="{{url}}" target="_blank" style="font-weight: bold;">{{title}}</a>
+			<h6>{{byLine}}</h6>
+			<h6>{{created}}</h6>
+			<p>{{excerpt}}</p>
+			<button class="save-article" data-id="{{id}}">Save Article</button>
+			<hr>
+		{{/each}}	
+	</div>
+{{else}}
+	<div>
+		<h3 class="welcome-msg">Click Scrape New Articles to get started!</h3>
+	</div>
+{{/if}}

@@ -13,6 +13,8 @@ const MAX_ARTICLES = 20;
 
 function newsRoutes(app) {
 
+	// Add a new note to the Note db
+	// Also add a reference in Article db
 	app.post("/addnote/:id", function(req, res) {
 		var id = req.params.id;
 		var body = req.body;
@@ -26,6 +28,8 @@ function newsRoutes(app) {
 		});
 	});
 
+	// Delete a note from the Note db
+	// Also remove its reference from Article db
 	app.post("/delete-note/:id", function(req, res) {
 		var id = req.params.id;
 		console.log("Deleting Notes for  Id: " + id);
@@ -34,19 +38,20 @@ function newsRoutes(app) {
 		.then(function(dbNote) {
 			console.log(dbNote);
 			return db.Article.findOneAndUpdate({"_id": req.body.id}, { $pull: { notes: req.params.id } }, { new: true });
-
 		});
 	});
 		
+	// Retrieve all notes for display for a given article	
 	app.get("/notes/:id", function(req, res) {
 		var id = req.params.id;
 		console.log("Get all notes: " + id);
-		db.Article.findOne({"_id": req.params.id})
-		  .populate("notes")
-		  .then(function(data) {
+		db.Article
+		.findOne({"_id": req.params.id})
+		.populate("notes")
+		.then(function(data) {
 		    console.log(data);
 		    res.json(data);
-		  });
+	 	});
 	});
 
 	// Perform a new scrape and save the results
@@ -71,6 +76,8 @@ function newsRoutes(app) {
 						saved: false
 					};
 
+					// With "upsert" set to "true" it will only insert if the entry does not already
+					// exist!
 					db.Article
 					.findOneAndUpdate(scrapeObj, scrapeObj, {upsert: true})
 					.then(function(err, data) {
@@ -90,11 +97,11 @@ function newsRoutes(app) {
 				if (count >= MAX_ARTICLES) {
 					return false;
 				}
-			});
-		});
+			}); // each div
+		});// request
 	});
 
-	// Save an article
+	// Save an article.  Set the "saved" field to true
 	app.post("/save/:id", function(req, res) {
 		console.log("POST Save Article: " + req.params.id);
 		db.Article
@@ -104,15 +111,23 @@ function newsRoutes(app) {
 		});
 	});
 
-	// Delete an article from saved list
+	// Delete an article from saved list.
 	app.post("/delete/:id", function(req, res) {
 		console.log("POST Delete Saved Article: " + req.params.id);
 
 		// Just toggle the saved field of the entry in the database
 		db.Article
-		.findOneAndUpdate({"_id":req.params.id},{saved: false}, {new: true})
+		.findOneAndUpdate({"_id":req.params.id},{saved: false, notes: []}, {new: false})
 		.then(function(data) {
 			console.log(data);
+			for (var i=0; i<data.notes.length; i++) {
+				console.log(data.notes[i]);
+				db.Note
+				.findByIdAndRemove(data.notes[i])
+				.then(function(data) {
+					console.log("Find Notes and Delete: " + data);
+				});
+			}
 			res.json(data);
 		});
 	});
@@ -131,18 +146,25 @@ function newsRoutes(app) {
 	// Route for getting all Articles from the db
 	app.get("/articles", function(req, res) {
 		console.log("Get All Articles");
-		db.Article.find({})
+		db.Article
+		.find({})
 		.then(function(dbArticle) {
 	    	res.json(dbArticle);
 	  	});
 	});
 
-	// Initial or Home button
+	// Initial loading page or Home button
 	app.get("/", function(req, res) {
 		console.log("GET: Home");
-		db.Article.find({})
+		db.Article
+		.find({})
 		.then(function(dbArticle) {
-	    	res.render('index', {articles: dbArticle});
+			if (dbArticle.length) {
+	    		res.render('index', {articles: dbArticle, contentPresent: true});
+	    	} else {
+	    		res.render('index', {articles: [], contentPresent: false});
+	    	}
+
 	  	});
 	});
 };

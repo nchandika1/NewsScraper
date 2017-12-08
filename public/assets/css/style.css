@@ -59,6 +59,12 @@ header {
 	background-color: gray;
 }
 
+.welcome-msg {
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	padding: 10px;
+}
+
 footer {
 	position:absolute;
 	bottom: 0;
